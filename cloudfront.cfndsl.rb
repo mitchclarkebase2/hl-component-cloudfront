@@ -2,6 +2,7 @@ CloudFormation do
 
   Condition('WebACLEnabled', FnNot(FnEquals(Ref('WebACL'), '')))
   Condition('EnableLambdaFunctionAssociations', FnEquals(Ref('EnableLambdaFunctionAssociations'), 'true'))
+  Condition('IsProd', FnEquals(Ref('EnvironmentName'), 'prod'))
 
   tags = []
   tags << { Key: 'EnvironmentName', Value: Ref('EnvironmentName') }
@@ -90,7 +91,13 @@ CloudFormation do
     Mapping('aliases', map)
     distribution_config[:Aliases] = FnSplit(',', FnFindInMap('aliases', Ref('AliasMap'), 'records'))
   elsif (defined? aliases) && (aliases.any?)
-    distribution_config[:Aliases] = aliases.map { |a| FnSub(a) }
+    distribution_config[:Aliases] = aliases.map { |a|
+      if a.is_a?(Array)
+        FnSub(a[0], a[1..-1][0])
+      else
+        FnSub(a)
+      end
+    }
   end
 
   CloudFront_Distribution(:Distribution) {
