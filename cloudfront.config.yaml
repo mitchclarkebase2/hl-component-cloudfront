@@ -62,4 +62,4 @@ behaviours:
 
 # aliases:
 #   - '*.${DnsDomain}'
-#   - ['*.${ProdDnsDomain}', { 'ProdDnsDomain': { 'Fn::If': ['IsProd', 'my.prod.domain', 'AWS::NoValue'] } } ]
+#   - Fn::If: [ IsProd, '*.approach.app', { 'Ref': 'AWS::NoValue'}  ]

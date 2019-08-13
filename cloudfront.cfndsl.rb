@@ -92,8 +92,8 @@ CloudFormation do
     distribution_config[:Aliases] = FnSplit(',', FnFindInMap('aliases', Ref('AliasMap'), 'records'))
   elsif (defined? aliases) && (aliases.any?)
     distribution_config[:Aliases] = aliases.map { |a|
-      if a.is_a?(Array)
-        FnSub(a[0], a[1..-1][0])
+      if a.is_a?(Hash)
+        a
       else
         FnSub(a)
       end
