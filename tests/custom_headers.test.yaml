@@ -1,0 +1,18 @@
+test_metadata:
+  type: config
+  name: custom headers
+  description: Origin custom headers in config
+
+name: ConfigAliasesDistribution
+description: Origin custom headers in config
+
+origins:
+  myapploadbalancer:
+    source: loadbalancer
+    # http-only | match-viewer | https-only
+    protocol_policy: https-only
+    ssl_protocols:
+      - TLSv1.2
+    custom_headers:
+      - HeaderName: x-test-header
+        HeaderValue: sf5kfdfsa3mfkd4

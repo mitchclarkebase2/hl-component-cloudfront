@@ -15,6 +15,14 @@ http_version: http2
 #     ResponseCode: 200
 #     ResponsePagePath: /index.html
 
+# origins:
+#   loadbalancer:
+#     source: loadbalancer
+#     protocol_policy: https-only
+#     custom_headers:
+        # - HeaderName: x-test-header
+        #   HeaderValue: desiredvalue
+
 ssl:
   # acm | cloudfront | iam
   type: cloudfront

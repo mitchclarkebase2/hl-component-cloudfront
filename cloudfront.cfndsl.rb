@@ -18,6 +18,7 @@ CloudFormation do
       DomainName: Ref("#{id}OriginDomainName")
     }
     origin[:OriginPath] = config['origin_path'] if config.has_key?('origin_path')
+    origin[:OriginCustomHeaders] = config['custom_headers'] if config.has_key?('custom_headers')
     case config['source']
     when 'loadbalancer', 'apigateway'
       origin[:CustomOriginConfig] = { HTTPPort: '80', HTTPSPort: '443' }
