@@ -33,6 +33,11 @@ CloudFormation do
         })
       }
       origin[:S3OriginConfig] = { OriginAccessIdentity: FnSub("origin-access-identity/cloudfront/${#{id}OriginAccessIdentity}") }
+
+      Output("#{id}OriginAccessIdentity") do
+        Value(FnGetAtt("#{id}OriginAccessIdentity", 'S3CanonicalUserId'))
+      end
+
     end
 
     distribution_config[:Origins] << origin
