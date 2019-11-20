@@ -1,3 +1,6 @@
+
+dns_format: ${DnsDomain}
+
 # true | false
 enabled: true
 comment: ${EnvironmentName} distribution

@@ -113,7 +113,7 @@ CloudFormation do
 
   dns_records.each_with_index do |dns, index|
     Route53_RecordSet("CloudfrontDns#{index}") do
-      HostedZoneName FnSub('${DnsDomain}.')
+      HostedZoneName FnSub("#{dns_format}.")
       Name FnSub("#{dns}")
       Type 'CNAME'
       TTL '60'
