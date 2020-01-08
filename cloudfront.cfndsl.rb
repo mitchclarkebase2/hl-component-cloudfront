@@ -12,6 +12,7 @@ CloudFormation do
   distribution_config[:Comment] = FnSub(comment)
   distribution_config[:Origins] = []
 
+  origins = external_parameters.fetch(:origins, {})
   origins.each do |id,config|
     origin={
       Id: id,
@@ -42,17 +43,21 @@ CloudFormation do
 
     distribution_config[:Origins] << origin
 
-  end if (defined? origins) && (origins.any?)
+  end
 
-  distribution_config[:DefaultRootObject] = default_root_object if defined? default_root_object
-  distribution_config[:HttpVersion] = http_version
-  distribution_config[:Enabled] = enabled
-  distribution_config[:IPV6Enabled] = ipv6 if defined? ipv6
+  default_root_object = external_parameters.fetch(:default_root_object, nil)
+  ipv6 = external_parameters.fetch(:ipv6, nil)
+  custom_error_responses = external_parameters.fetch(:custom_error_responses, nil)
+  distribution_config[:DefaultRootObject] = default_root_object unless default_root_object.nil?
+  distribution_config[:HttpVersion] = external_parameters[:http_version]
+  distribution_config[:Enabled] = external_parameters[:enabled]
+  distribution_config[:IPV6Enabled] = ipv6 unless ipv6.nil?
   distribution_config[:PriceClass] = Ref('PriceClass')
   distribution_config[:WebACLId] = FnIf('WebACLEnabled', Ref('WebACL'), Ref('AWS::NoValue'))
-  distribution_config[:CustomErrorResponses] = custom_error_responses if defined? custom_error_responses
+  distribution_config[:CustomErrorResponses] = custom_error_responses unless custom_error_responses.nil?
 
-  if defined? logs
+  logs = external_parameters.fetch(:logs, {})
+  unless logs.empty?
     logging_config = {
       Bucket: FnSub(logs['bucket'])
     }
@@ -66,6 +71,7 @@ CloudFormation do
   # SSL Settings
   distribution_config[:ViewerCertificate] = {}
 
+  ssl = external_parameters[:ssl]
   case ssl['type']
   when 'acm'
     distribution_config[:ViewerCertificate][:AcmCertificateArn] = Ref('AcmCertificateArn')
@@ -82,6 +88,7 @@ CloudFormation do
   distribution_config[:ViewerCertificate][:MinimumProtocolVersion] = ssl.has_key?('minimum_protocol_version') ? ssl['minimum_protocol_version'] : "TLSv1.2_2018"
 
   # Cache behviours
+  behaviours = external_parameters.fetch(:behaviours, {})
   behaviours.each do |behaviour, config|
     if behaviour == 'default'
       distribution_config[:DefaultCacheBehavior] = config
@@ -91,7 +98,9 @@ CloudFormation do
   end
 
   # Aliases
-  if (defined? aliases_map) && (aliases_map.any?)
+  aliases_map = external_parameters.fetch(:aliases_map, {})
+  aliases = external_parameters.fetch(:aliases, [])
+  if aliases_map.any?
     map = {}
     aliases_map.each { |k,v| map[k.to_sym] = { records: v.join(',') } }
     Mapping('aliases', map)
@@ -111,21 +120,20 @@ CloudFormation do
     Tags tags
   }
 
+  dns_records = external_parameters.fetch(:dns_records, {})
   dns_records.each_with_index do |dns, index|
     Route53_RecordSet("CloudfrontDns#{index}") do
-      HostedZoneName FnSub("#{dns_format}.")
+      HostedZoneName FnSub("#{external_parameters[:dns_format]}.")
       Name FnSub("#{dns}")
       Type 'CNAME'
       TTL '60'
       ResourceRecords [FnGetAtt('Distribution', 'DomainName')]
     end
-  end if defined? dns_records
-
-  export = defined?(export_name) ? export_name : component_name
+  end
 
   Output('DomainName') do
     Value(FnGetAtt('Distribution', 'DomainName'))
-    Export FnSub("${EnvironmentName}-#{export}-DomainName")
+    Export FnSub("${EnvironmentName}-#{external_parameters[:export_name]}-DomainName")
   end
 
 end
