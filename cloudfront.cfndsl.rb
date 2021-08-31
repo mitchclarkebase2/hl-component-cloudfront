@@ -102,7 +102,7 @@ CloudFormation do
   aliases = external_parameters.fetch(:aliases, [])
   if aliases_map.any?
     map = {}
-    aliases_map.each { |k,v| map[k.to_sym] = { records: v.join(',') } }
+    aliases_map.each { |k,v| map[k.to_sym] = { records: FnSub(v.join(',')) } }
     Mapping('aliases', map)
     distribution_config[:Aliases] = FnSplit(',', FnFindInMap('aliases', Ref('AliasMap'), 'records'))
   elsif (defined? aliases) && (aliases.any?)
